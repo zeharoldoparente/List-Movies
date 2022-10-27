@@ -1,41 +1,23 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:movie_list/model/movie.dart';
-
-import 'model/api.dart';
+import 'package:dio/dio.dart';
 
 class ListMovie extends StatefulWidget {
-  const ListMovie({Key key}) : super(key: key);
-
+  const ListMovie({Key? key}) : super(key: key);
 
   @override
   State<ListMovie> createState() => _ListMovieState();
 }
 
+
 class _ListMovieState extends State<ListMovie> {
-
-
-  // var lmovie = List<Movie>();
-
-
-  List<Movie> lmovie = [];
-  
-
-  _getMovie(){
-    API.getMovies().then((response){
-      setState(() {
-      Iterable lista = json.decode(response.body);
-      lmovie = lista.map((model) => Movie.fromJson(model)).toList();
-      });
-    });
+  final dio = Dio();
+  final url = 'https://api-content.ingresso.com/v0/sessions/city/28/theater/%20/partnership/%20';
+  Future<List<Movie>> _getMovie() async {
+    final response = await dio.get(url);
+    final list = response.data as List;
+    return list.map((json) => Movie.fromJson(json)).toList();
   }
-
-  _ListMovieState(){
-    _getMovie();
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -43,23 +25,23 @@ class _ListMovieState extends State<ListMovie> {
       appBar: AppBar(
         title: const Text("List Movie"),
       ),
-      body: listMovie(),
+      body: FutureBuilder(
+        future: _getMovie(),
+        builder: (context, AsyncSnapshot<List<Movie>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const CircularProgressIndicator();
+          }
+
+          return ListView.builder(
+            itemCount: snapshot.data?.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(snapshot.data.toString()),
+              );
+            },
+          );
+        },
+      ),
     );
   }
-
-
-
-listMovie(){
-  return ListView.builder(
-    itemCount: lmovie.length,
-    itemBuilder: (context, index){
-      return ListTile(
-        title: Text(lmovie[index].urlKey),
-      );
-    },
-  );
 }
-
-}
-
-
