@@ -29,7 +29,7 @@ class _ListMovieState extends State<ListMovie> {
         future: _getMovie(),
         builder: (context, AsyncSnapshot<List<Movie>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const CircularProgressIndicator();
+            return const Center(child: CircularProgressIndicator());
           }
 
           return ListView.builder(
